@@ -4,29 +4,28 @@ import { BsSearch } from "react-icons/bs";
 import { GrAddCircle } from "react-icons/gr";
 import { ImCalendar } from "react-icons/im";
 import { RiAccountCircleLine } from "react-icons/ri";
-
+import styled from 'styled-components';
+const BottomNav = styled.div`
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 6vh;
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	font-size: 30px;
+	background: white;
+`;
 function BottomNavigator() {
   return (
-    <div
-      style={{
-        position: "absolute",
-        height: "6vh",
-        fontSize: "30px",
-        width: "100%",
-        bottom: 0,
-        left: 0,
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
-        background: 'white'
-      }}
-    >
+    <BottomNav>
         <AiOutlineHome />
         <BsSearch />
         <GrAddCircle />
         <ImCalendar color={"#66D8FD"} />
         <RiAccountCircleLine />
-    </div>
+    </BottomNav>
   );
 }
 

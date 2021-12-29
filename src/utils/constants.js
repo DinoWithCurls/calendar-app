@@ -1,4 +1,4 @@
-export const monthShort = [
+export const Month = [
   "Jan",
   "Feb",
   "Mar",
@@ -13,7 +13,7 @@ export const monthShort = [
   "Dec",
 ];
 
-export const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
+export const WeekDays = ["S", "M", "T", "W", "T", "F", "S"];
 export const monthLong = [
   "January",
   "February",

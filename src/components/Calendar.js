@@ -1,18 +1,54 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FixedSizeGrid } from "react-window";
-import ModalComponent from "./modal";
-import DateCard from "./dateCard";
-import useWindowSize from "../hooks/useWindowSize";
-import {weekDays} from '../utils/constants'
-const Calendar = ({ currMonth, setCurrMonth, setCurrYear }) => {
-  let [screenWidth] = useWindowSize();
-  const calendarRef = useRef(null);
-  const [cardIndex, setCardIndex] = useState(0);
-  const [isOpen, setOpen] = useState(false);
-  const [posts, setPosts] = useState([]);
-  const [dates, setDates] = useState([]);
-  useEffect(() => {
-    fetch('https://api.quinn.care/graph', {
+import React, { useRef, useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { FixedSizeGrid as Grid } from 'react-window';
+import useWindowSize  from '../hooks/useWindowSize';
+import Cell from './dateCard';
+import ModalComponent from './modal';
+import { WeekDays } from '../utils/constants';
+
+const CalendarWrapper = styled.div`
+	width: 100%;
+	height: 83vh;
+`;
+
+const DatesWrapper = styled.div`
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow-x: hidden;
+`;
+
+const HeaderRow = styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 98.75%;
+`;
+
+const HeaderCell = styled.div`
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 0.2px solid rgb(230, 230, 230);
+	font-weight: bold;
+`;
+
+export default function CalendarComponent({
+	setCurrentYear,
+	setCurrentMonth,
+	currentMonth,
+}) {
+	const [width] = useWindowSize();
+	const gridRef = useRef(null);
+	const [posts, setPosts] = useState([]);
+	const [dateArray, setDateArray] = useState([]);
+	const [isOpen, setIsOpen] = useState(false);
+	const [currentModalIndex, setCurrentModalIndex] = useState(0);
+
+	useEffect(() => {
+		fetch('https://api.quinn.care/graph', {
         method:'POST',
         headers: {'Content-Type' : 'application/json'},
         body: JSON.stringify({
@@ -57,74 +93,81 @@ const Calendar = ({ currMonth, setCurrMonth, setCurrYear }) => {
             }
           ]
         })
-    }).then((res)=> res.json()).then((data) => {
-        setPosts(data.responseobjects[0].posts);
-        let arr = data.responseobjects[0].posts.map(
-            data => new Date(data.calendardatetime)
-        )
-        setDates(arr);
     })
-  }, []);
-  useEffect(() => {
-    let today = new Date();
-    let dayOffset = today.getTimezoneOffset();
-    let indianOffset = 330; //5.30 hrs * 60 mins
-    let indianTime = new Date(
-      today.getTime() + (indianOffset + dayOffset) * 60000
-    );
-    let weekOffset = Math.round(
-      (indianTime - new Date(1970, 1, 4)) / (7 * 24 * 60 * 60 * 1000)
-    );
-    calendarRef.current.scrollToItem({
-      columnIndex: 2,
-      rowIndex: weekOffset + 7,
-    });
-  }, []);
-  return (
-    <>
-      <ModalComponent
-        width={screenWidth}
-        isOpen={isOpen}
-        setOpen={setOpen}
-        cardIndex={cardIndex}
-        posts={posts}
-        dates={dates}
-      />
-      <div style={{ height: "83vh", width:'100%' }}>
-        <div style={{display:'flex', justifyContent:'center', alignItems:'center', width: '98.75%'}}>
-          {weekDays.map((day, index) => 
-            <div style={{height:'5vh', borderWidth:'0.2px', borderColor:'#E6E6E6', justifyContent:'center', display:'flex', flex:1, alignItems:'center', fontWeight:"bold"}} key={index}>
-              {day}
-            </div>
-          )}
-        </div>
-        <div style={{width:'100%', display:'flex', justifyContent:'center', alignItems:'center', overflowX:'hidden'}}>
-          <FixedSizeGrid
-            useIsScrolling
-            ref={calendarRef}
-            columnCount={7}
-            columnWidth={screenWidth / 7.1}
-            height={600}
-            rowCount={10000}
-            rowHeight={100}
-            width={screenWidth}
-            itemData={{
-              setCurrMonth: setCurrMonth,
-              setCurrYear: setCurrYear,
-              currMonth: currMonth,
-              posts: posts,
-              dates: dates,
-              setCardIndex: setCardIndex,
-              setOpen: setOpen,
-              otherData: true,
-            }}
-          >
-            {DateCard}
-          </FixedSizeGrid>
-        </div>
-      </div>
-    </>
-  );
-};
+			.then((result) => result.json())
+			.then((data) => {
+				setPosts(data.responseobjects[0].posts);
+				let createdArray = data.responseobjects[0].posts.map(
+					(data) => new Date(data.calendardatetime)
+				);
+				setDateArray(createdArray);
+			});
+	}, []);
 
-export default Calendar;
+	useEffect(() => {
+		let currentTime = new Date();
+		let currentOffset = currentTime.getTimezoneOffset();
+		let ISTOffset = 330;
+		let ISTTime = new Date(
+			currentTime.getTime() + (ISTOffset + currentOffset) * 60000
+		);
+		let weekOffSet = Math.round(
+			(ISTTime - new Date(1970, 1, 4)) / (7 * 24 * 60 * 60 * 1000)
+		);
+		gridRef.current.scrollToItem({
+			columnIndex: 2,
+			rowIndex: weekOffSet + 7,
+		});
+	}, []);
+
+	return (
+		<>
+			<ModalComponent
+				width={width}
+				isOpen={isOpen}
+				setIsOpen={setIsOpen}
+				currentModalIndex={currentModalIndex}
+				posts={posts}
+				dateArray={dateArray}
+			/>
+			<CalendarWrapper>
+				<HeaderRow>
+					{WeekDays.map((day) => (
+						<HeaderCell
+							style={{
+								height: '5vh',
+							}}
+						>
+							{day}
+						</HeaderCell>
+					))}
+				</HeaderRow>
+				<DatesWrapper>
+					<Grid
+						useIsScrolling
+						ref={gridRef}
+						className='gridWrapper'
+						columnCount={7}
+						columnWidth={width / 7.1}
+						height={600}
+						rowCount={220000}
+						rowHeight={110}
+						width={width}
+						itemData={{
+							setCurrentMonth: setCurrentMonth,
+							setCurrentYear: setCurrentYear,
+							currentMonth: currentMonth,
+							posts: posts,
+							dateArray: dateArray,
+							setCurrentModalIndex: setCurrentModalIndex,
+							setIsOpen: setIsOpen,
+							otherData: true,
+						}}
+					>
+						{Cell}
+					</Grid>
+				</DatesWrapper>
+			</CalendarWrapper>
+		</>
+	);
+}

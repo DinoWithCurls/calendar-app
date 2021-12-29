@@ -1,41 +1,44 @@
-import React from "react";
-import { AiOutlineArrowLeft } from "react-icons/ai";
-import { monthShort } from "../utils/constants";
+import React from 'react';
+import styled from 'styled-components';
+import { AiOutlineArrowLeft } from 'react-icons/ai';
+import { Month } from '../utils/constants';
 
-const Header = ({ currMonth, currYear }) => {
-  return (
-    <header
-      style={{
-        height: "6vh",
-        boxSizing: "border-box",
-        alignItems: "center",
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: "28px",
-        fontWeight: 700,
-        paddingLeft: "5px",
-      }}
-    >
-      <span>
-        
-        <span>
-          <AiOutlineArrowLeft />
-        </span>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <span
-          style={{
-            color: "#66D8FD",
-          }}
-        >
-          My
-        </span>{" "}
-        Hair Diary
-      </span>
-      <span className="font-normal">
-        <b>{monthShort[monthShort.indexOf(currMonth)]}</b> {currYear}
-      </span>
-    </header>
-  );
-};
+const Header = styled.header`
+	height: 6vh;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 28px;
+	font-weight: 700;
+	padding: 5px;
+	@media (max-width: 700px) {
+		font-size: 18px;
+	}
+`;
 
-export default Header;
+export default function HeaderComponent({ currentMonth, currentYear }) {
+	return (
+		<Header>
+			<span>
+				<AiOutlineArrowLeft />
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<span
+					style={{
+						color: '#66D8FD',
+					}}
+				>
+					My
+				</span>{' '}
+				Hair Diary
+			</span>
+			<span
+				style={{
+					fontWeight: 400,
+				}}
+			>
+				<b>{Month[currentMonth]}</b> {currentYear}
+			</span>
+		</Header>
+	);
+}

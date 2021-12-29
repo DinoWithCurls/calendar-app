@@ -1,10 +1,21 @@
 import React, {useState, useEffect} from 'react'
+import styled from 'styled-components';
 
-function Events({e}){
+const EventBubble = styled.span`
+	border-radius: 10px;
+	padding: 4px;
+	font-weight: 500;
+	text-align: center;
+	font-size: 12px;
+	@media (max-width: 700px) {
+		font-size: 8px;
+	}
+`;
+function Events({event}){
     const [name, setName] = useState(null)
     const [color, setColor] = useState(null)
     useEffect(()=>{
-        switch(e) {
+        switch(event) {
             case 'protein treatment': 
 				setName('Pr');
 				setColor('#DDEBF1');
@@ -26,11 +37,11 @@ function Events({e}){
 				setColor('#F4DFEB');
 				break;
         }
-    }, [e])
+    }, [event])
     return (
-        <span className='p-1 font-medium text-center border-10 text-sm sm:text-xs' style={{backgroundColor: color ? color : 'transparent'}}>
+        <EventBubble>
             {name}
-        </span>
+        </EventBubble>
     )
 }
 

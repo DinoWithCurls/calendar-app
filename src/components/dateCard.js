@@ -1,109 +1,183 @@
-import React, { useState, useEffect } from "react";
-import Events from "../hooks/events";
-import {monthShort} from "../utils/constants";
-import { StarIcon } from "@heroicons/react/solid";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { AiFillStar } from 'react-icons/ai';
+import Events from '../hooks/events';
+import { Month } from '../utils/constants';
 
-function DateCard({ colIdx, rowIdx, style, isScrolling, data }) {
-  const {
-    setOpen,
-    setCurrMonth,
-    setCurrYear,
-    currMonth,
-    posts,
-    dates,
-    setCardIndex,
-  } = data;
-  const [disp, setDisp] = useState(false);
-  const [imgIdx, setImgIdx] = useState(null);
-  const onClick = (e) => {
-    setCardIndex(imgIdx);
-    setOpen((val) => !val);
-  };
+const CellWrapper = styled.div`
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	border: 0.2px solid rgb(230, 230, 230);
+	text-align: center;
+	font-size: 12px;
+	position: relative;
+`;
 
-  useEffect(() => {
-    const current = new Date(0);
-    current.setDate(current.getDate() + (rowIdx - 1) * 7 + colIdx + 3);
-    if (current.getMonth() === 0) {
-      setCurrMonth(11);
-      setCurrYear(current.getFullYear() - 1);
-    } else {
-      setCurrMonth(current.getMonth() - 1);
-      setCurrYear(current.getFullYear());
-    }
-    let filteredDates = dates.filter((date, index) => {
-      if (
-        current.getMonth() === date.getMonth() &&
-        current.getDate() === date.getDate() &&
-        current.getFullYear() === date.getFullYear()
-      ) {
-        setImgIdx(index);
-        return true;
-      }
-      return false
-    });
-    if (filteredDates.length) {
-      setDisp(Boolean(filteredDates.length));
-    }
-  }, [rowIdx, colIdx, dates, setCurrMonth, setCurrYear]);
-  const current = new Date(0);
-  current.setDate(current.getDate() + (rowIdx - 1) * 7 + colIdx + 3);
-  const weekend = new Date(current);
-  weekend.setDate(weekend.getDate() + 6);
-  return (
-    <div
-      className="flex flex-col justify-start items-center text-center relative text-sm border-solid border-slate-300 border-1/5"
-      style={{
-        ...style,
-        backgroundColor: colIdx === 0 ? "rgba(0,0,0,0.1)" : "transparent",
-        fontWeight: current.getMonth() === currMonth ? 900 : 400,
-      }}
-    >
-        {isScrolling ? (
-            colIdx === 0 && current.getDate() === 1 ? (
-                <>
-                    <span className="bg-white absolute top-px">
-                        <b>{monthShort[current.getMonth()]} {current.getFullYear()}</b>
-                    </span>
-                    {current.getDate()}
-                </>
-            ) : colIdx === 0 && current.getDate() > weekend.getDate() && (current.getMonth() < weekend.getMonth() || (current.getMonth()=== 11 && current.getMonth() > weekend.getMonth())) ? (
-                <>
-                    <span className="bg-white absolute top-px">
-                        <b>
-                            {current.getMonth()===11 ? `${monthShort[(current.getMonth() + 1) % 12]} ${current.getFullYear() + 1}` : `${monthShort[(current.getMonth()+1)%12]} ${current.getFullYear()}`}
-                        </b>
-                    </span>
-                    {current.getDate()}
-                </>
-            ) : (
-                current.getDate()
-            )
-        ) : (
-            current.getDate()
-        )
-    }
-    {
-        disp && imgIdx!== null && (
-            <div className="mt-1.5 flex flex-col justify-around items-center w-full md:mt-0 md:h-4/5" onClick={onClick}>
-                <div className="text-sm md:text-xs">
-                    {[...new Array(5)].map((e, idx) => {
-                        if(idx<posts[imgIdx].rating) {
-                            return <StarIcon color="#9DD0EB" />
-                        } else {
-                            return <StarIcon color='#D2D4D8' />
-                        }
-                    })}
-                </div>
-                <img className="w-2/5 h-4/6 lg:w-4/5 md:w-full" src={posts[imgIdx].media[0].mediaurl} alt='' />
-                <div className="flex">
-                    {posts[imgIdx].typeofday.map(item=>(
-                        <Events e={item} />
-                    ))}
-                </div>
-            </div>
-        )
-    }
-    </div>
-  );
+const ScrollDetails = styled.span`
+	background: white;
+	position: absolute;
+	top: 1px;
+`;
+
+const ElementWrapper = styled.div`
+	margin-top: 6px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+	height: 70%;
+	width: 100%;
+	@media (max-width: 700px) {
+		margin-top: 0px;
+		height: 80%;
+	}
+`;
+
+const ImageWrapper = styled.img`
+	width: 40%;
+	height: 70%;
+	@media (max-width: 1100px) {
+		width: 80%;
+	}
+	@media (max-width: 700px) {
+		width: 100% !important;
+	}
+`;
+
+const EventContainer = styled.div`
+	display: flex;
+`;
+
+const RatingWrapper = styled.div`
+	font-size: 12px;
+	@media (max-width: 700px) {
+		font-size: 8px;
+	}
+`;
+
+export default function Cell({
+	columnIndex,
+	rowIndex,
+	style,
+	data,
+	isScrolling,
+}) {
+	const {
+		setIsOpen,
+		setCurrentYear,
+		setCurrentMonth,
+		currentMonth,
+		posts,
+		dateArray,
+		setCurrentModalIndex,
+	} = data;
+	const [display, setDisplay] = useState(false);
+	const [imgIndex, setImgIndex] = useState(null);
+
+	useEffect(() => {
+		const now = new Date(0);
+		now.setDate(now.getDate() + (rowIndex - 1) * 7 + columnIndex + 3);
+		if (now.getMonth() === 0) {
+			setCurrentMonth(11);
+			setCurrentYear(now.getFullYear() - 1);
+		} else {
+			setCurrentMonth(now.getMonth() - 1);
+			setCurrentYear(now.getFullYear());
+		}
+
+		// eslint-disable-next-line array-callback-return
+		let filteredArray = dateArray.filter((date, index) => {
+			if (
+				now.getDate() === date.getDate() &&
+				now.getMonth() === date.getMonth() &&
+				now.getFullYear() === date.getFullYear()
+			) {
+				setImgIndex(index);
+				return true;
+			}
+		});
+
+		if (filteredArray.length) {
+			setDisplay(Boolean(filteredArray.length));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentMonth]);
+
+	function handleClick(e) {
+		setCurrentModalIndex(imgIndex);
+		setIsOpen((prev) => !prev);
+	}
+	const now = new Date(0);
+	now.setDate(now.getDate() + (rowIndex - 1) * 7 + columnIndex + 3);
+	const weekEndDate = new Date(now);
+	weekEndDate.setDate(weekEndDate.getDate() + 6);
+	return (
+		<>
+			<CellWrapper
+				style={{
+					...style,
+					backgroundColor:
+						columnIndex === 0 ? 'rgba(0,0,0, 0.1)' : 'transparent',
+					fontWeight: now.getMonth() === currentMonth ? 900 : 400,
+				}}
+			>
+				{isScrolling ? (
+					columnIndex === 0 && now.getDate() === 1 ? (
+						<>
+							<ScrollDetails>
+								<b>
+									{Month[now.getMonth()]} {now.getFullYear()}
+								</b>
+							</ScrollDetails>
+							{now.getDate()}
+						</>
+					) : columnIndex === 0 &&
+					  now.getDate() > weekEndDate.getDate() &&
+					  (now.getMonth() < weekEndDate.getMonth() ||
+							(now.getMonth() === 11 &&
+								now.getMonth() > weekEndDate.getMonth())) ? (
+						<>
+							<ScrollDetails>
+								<b>
+									{now.getMonth() === 11
+										? `${Month[(now.getMonth() + 1) % 12]} ${
+												now.getFullYear() + 1
+										  }`
+										: `${
+												Month[(now.getMonth() + 1) % 12]
+										  } ${now.getFullYear()}`}
+								</b>
+							</ScrollDetails>
+							{now.getDate()}
+						</>
+					) : (
+						now.getDate()
+					)
+				) : (
+					now.getDate()
+				)}
+				{display && imgIndex !== null && (
+					<ElementWrapper onClick={handleClick}>
+						<RatingWrapper>
+							{[...new Array(5)].map((elm, index) => {
+								if (index < posts[imgIndex]?.rating) {
+									return <AiFillStar color={'#9DD0EB'} />;
+								} else {
+									return <AiFillStar color={'#D2D4D8'} />;
+								}
+							})}
+						</RatingWrapper>
+						<ImageWrapper src={posts[imgIndex]?.media[0]?.mediaurl} />
+						<EventContainer>
+							{posts[imgIndex]?.typeofday?.map((element) => (
+								<Events event={element} />
+							))}
+						</EventContainer>
+					</ElementWrapper>
+				)}
+			</CellWrapper>
+		</>
+	);
 }
-export default DateCard;
